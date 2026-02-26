@@ -87,7 +87,7 @@ jobs:
           E2E_DYNAMODB_TABLE: ${{ vars.E2E_DYNAMODB_TABLE }}
           E2E_AWS_REGION: ap-northeast-1
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_MODEL: gemini-2.5-flash
+          GEMINI_MODEL: gemini-2.5-flash-lite
         run: uv run pytest tests/agentitest/ -v --alluredir=allure-results
 
       - name: Upload Allure results

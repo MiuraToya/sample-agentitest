@@ -1,0 +1,2 @@
+INFO     tests.agentitest.conftest:conftest.py:275 Running task: Go to https://d214my39l3yw2c.cloudfront.net, then confirm that the heading says 'Welcome to SampleApp' and the page description mentions 'React + FastAPI'. Return 'welcome_confirmed' if both are visible.
+INFO     botocore.credentials:credentials.py:1252 Found credentials in environment variables.

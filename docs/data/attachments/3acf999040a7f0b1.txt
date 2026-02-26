@@ -1,0 +1,2 @@
+INFO     tests.agentitest.conftest:conftest.py:275 Running task: Go to https://d214my39l3yw2c.cloudfront.net, then click the 'Sign In' link in the navigation. On the login page, enter 'test@example.com' in the Email field and '***' in the Password field, then click the 'Sign In' button. Wait for the page to load. Now look at the navigation bar. Confirm that a 'Sign Out' button is visible and there is no 'Sign In' link. Return 'sign_out_visible' if the 'Sign Out' button is shown.
+INFO     botocore.credentials:credentials.py:1252 Found credentials in environment variables.

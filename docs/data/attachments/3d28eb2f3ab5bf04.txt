@@ -1,0 +1,2 @@
+INFO     tests.agentitest.conftest:conftest.py:275 Running task: Go to https://d214my39l3yw2c.cloudfront.net, then find and click the 'About' card (not the nav link, but the card on the page). Confirm the URL now contains '/about'. Return 'about_navigated' if it does.
+INFO     botocore.credentials:credentials.py:1252 Found credentials in environment variables.

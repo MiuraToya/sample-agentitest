@@ -1,0 +1,2 @@
+INFO     tests.agentitest.conftest:conftest.py:275 Running task: Go to https://d214my39l3yw2c.cloudfront.net, then click the 'Sign In' link in the navigation. On the login page, enter 'test@example.com' in the Email field and '***' in the Password field, then click the 'Sign In' button. Wait for the page to load. After signing in, confirm that a 'Todo List' heading is visible. Return 'todo_page_visible' if it is.
+INFO     botocore.credentials:credentials.py:1252 Found credentials in environment variables.

@@ -1,0 +1,2 @@
+INFO     tests.agentitest.conftest:conftest.py:275 Running task: Go to https://d214my39l3yw2c.cloudfront.net, then click the 'Sign In' link in the navigation. On the login page, enter 'test@example.com' in the Email field and '***' in the Password field, then click the 'Sign In' button. Wait for the page to load. On the Todo page, type '買い物に行く' in the input field and click 'Add'. Confirm that '買い物に行く' appears in the todo list. Return 'todo_added' if it does.
+INFO     botocore.credentials:credentials.py:1252 Found credentials in environment variables.

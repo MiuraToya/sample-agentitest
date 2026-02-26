@@ -1,0 +1,2 @@
+INFO     tests.agentitest.conftest:conftest.py:275 Running task: Go to https://d214my39l3yw2c.cloudfront.net, then click the 'Todo' link in the navigation. You should be redirected to a login page. Confirm that a 'Sign In' heading is visible and the URL contains '/login'. Return 'redirected_to_login' if both are true.
+INFO     botocore.credentials:credentials.py:1252 Found credentials in environment variables.

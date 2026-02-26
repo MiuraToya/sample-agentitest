@@ -1,0 +1,2 @@
+INFO     tests.agentitest.conftest:conftest.py:275 Running task: Go to https://d214my39l3yw2c.cloudfront.net, then click the 'About' link in the navigation bar. Confirm the URL contains '/about'. Then click the 'Home' link in the navigation bar. Confirm you are back on the home page with the 'Welcome to SampleApp' heading. Return 'navigation_works' if both navigations succeed.
+INFO     botocore.credentials:credentials.py:1252 Found credentials in environment variables.

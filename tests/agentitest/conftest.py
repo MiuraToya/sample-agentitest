@@ -40,6 +40,14 @@ TEST_PASSWORD = os.environ.get("E2E_TEST_PASSWORD", "Test1234")
 DYNAMODB_TABLE = os.environ.get("E2E_DYNAMODB_TABLE", "sample-agentitest-todos")
 AWS_REGION = os.environ.get("E2E_AWS_REGION", "ap-northeast-1")
 LLM_TEMPERATURE = 0.2
+_SENSITIVE_VALUES = [v for v in (TEST_PASSWORD,) if v]
+
+
+def _mask(text: str) -> str:
+    """機密情報をマスクする"""
+    for secret in _SENSITIVE_VALUES:
+        text = text.replace(secret, "***")
+    return text
 
 
 # ---------------------------------------------------------------------------
@@ -216,11 +224,11 @@ async def _record_step(agent: Agent) -> None:
     if param_str:
         step_title += f"({param_str})"
 
-    with allure.step(step_title):
+    with allure.step(_mask(step_title)):
         thoughts = history.model_thoughts()
         if thoughts:
             allure.attach(
-                str(thoughts[-1]),
+                _mask(str(thoughts[-1])),
                 name="Agent Thoughts",
                 attachment_type=allure.attachment_type.TEXT,
             )
@@ -264,7 +272,7 @@ async def _run_agent_task(
     browser_session: BrowserSession,
 ) -> str:
     """エージェントを初期化してタスクを実行する"""
-    logger.info(f"Running task: {full_task}")
+    logger.info(f"Running task: {_mask(full_task)}")
 
     agent: Agent = Agent(
         task=full_task,

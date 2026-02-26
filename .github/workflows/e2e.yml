@@ -8,7 +8,7 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
 
 jobs:
   e2e:
@@ -52,3 +52,22 @@ jobs:
           name: allure-results
           path: allure-results/
           retention-days: 30
+
+      - name: Generate Allure report
+        if: always()
+        run: |
+          curl -sL https://github.com/allure-framework/allure2/releases/download/2.34.0/allure-2.34.0.tgz | tar -xz
+          ./allure-2.34.0/bin/allure generate allure-results -o allure-report --clean
+
+      - name: Deploy to GitHub Pages
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages
+          git checkout gh-pages
+          rm -rf docs/*
+          cp -r allure-report/* docs/
+          git add docs/
+          git commit -m "ci: Allureレポートを更新" || true
+          git push origin gh-pages

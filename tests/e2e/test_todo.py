@@ -6,48 +6,48 @@
 
 import allure
 
-from .conftest import Todoページ
+from .conftest import TodoPage
 
 
 @allure.feature("Todo")
 @allure.story("ユーザーがTodoを追加してリストに表示される")
-def test_Todoを追加するとリストに表示される(サインイン済み, todo: Todoページ):
+def test_Todoを追加するとリストに表示される(signed_in, todo: TodoPage):
     """サインイン済みユーザーがTodoを追加し、リストに反映されることを確認する"""
     # 実行
-    todo.todoを追加("買い物に行く")
+    todo.add_todo("買い物に行く")
 
     # 検証
-    assert "買い物に行く" in todo.todoタイトル一覧
+    assert "買い物に行く" in todo.todo_titles
 
 
 @allure.feature("Todo")
 @allure.story("ユーザーがTodoを削除する")
-def test_Todoを追加して削除すると空メッセージが表示される(サインイン済み, todo: Todoページ):
+def test_Todoを追加して削除すると空メッセージが表示される(signed_in, todo: TodoPage):
     """Todoを追加してから削除すると、空のメッセージが表示される"""
     # 準備
-    todo.todoを追加("一時的なタスク")
+    todo.add_todo("一時的なタスク")
 
     # 実行
-    todo.todoを削除("一時的なタスク")
+    todo.delete_todo("一時的なタスク")
 
     # 検証
-    assert "No todos yet" in todo.空メッセージ
+    assert "No todos yet" in todo.empty_message
 
 
 @allure.feature("Todo")
 @allure.story("ユーザーが複数のTodoを管理する")
-def test_複数Todoから1件削除すると残りが正しく表示される(サインイン済み, todo: Todoページ):
+def test_複数Todoから1件削除すると残りが正しく表示される(signed_in, todo: TodoPage):
     """複数Todoを追加し、1件だけ削除すると残りが正しく表示される"""
     # 準備
-    todo.todoを追加("タスクA")
-    todo.todoを追加("タスクB")
-    todo.todoを追加("タスクC")
+    todo.add_todo("タスクA")
+    todo.add_todo("タスクB")
+    todo.add_todo("タスクC")
 
     # 実行 — 真ん中を削除
-    todo.todoを削除("タスクB")
+    todo.delete_todo("タスクB")
 
     # 検証
-    titles = todo.todoタイトル一覧
+    titles = todo.todo_titles
     assert "タスクA" in titles
     assert "タスクB" not in titles
     assert "タスクC" in titles

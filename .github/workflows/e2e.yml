@@ -50,18 +50,80 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
+          name: allure-results-e2e
           path: allure-results/
           retention-days: 30
 
-      - name: Generate Allure report
+  agentitest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python
+        run: uv python install 3.13
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install Playwright browsers
+        run: uv run playwright install --with-deps chromium
+
+      - name: Run AgentiTest
+        env:
+          E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
+          E2E_TEST_EMAIL: ${{ vars.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+          E2E_DYNAMODB_TABLE: ${{ vars.E2E_DYNAMODB_TABLE }}
+          E2E_AWS_REGION: ap-northeast-1
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
+        run: uv run pytest tests/agentitest/ -v --alluredir=allure-results
+
+      - name: Upload Allure results
         if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-agentitest
+          path: allure-results/
+          retention-days: 30
+
+  deploy-report:
+    runs-on: ubuntu-latest
+    needs: [e2e, agentitest]
+    if: always()
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download E2E results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-e2e
+          path: allure-results/
+
+      - name: Download AgentiTest results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results-agentitest
+          path: allure-results/
+
+      - name: Generate Allure report
         run: |
           curl -sL https://github.com/allure-framework/allure2/releases/download/2.34.0/allure-2.34.0.tgz | tar -xz
           ./allure-2.34.0/bin/allure generate allure-results -o allure-report --clean
 
       - name: Deploy to GitHub Pages
-        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

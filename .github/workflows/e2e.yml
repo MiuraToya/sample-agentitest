@@ -37,6 +37,12 @@ jobs:
         run: uv run playwright install --with-deps chromium
 
       - name: Run E2E tests
+        env:
+          E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
+          E2E_TEST_EMAIL: ${{ vars.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+          E2E_DYNAMODB_TABLE: ${{ vars.E2E_DYNAMODB_TABLE }}
+          E2E_AWS_REGION: ap-northeast-1
         run: uv run pytest tests/e2e/ -v --alluredir=allure-results
 
       - name: Upload Allure results

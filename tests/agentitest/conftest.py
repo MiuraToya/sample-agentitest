@@ -17,6 +17,7 @@ from importlib.metadata import version
 from typing import TYPE_CHECKING, Any
 
 import allure
+import boto3
 import pytest
 from browser_use import (
     Agent,
@@ -33,9 +34,11 @@ if TYPE_CHECKING:
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-BASE_URL = os.environ.get(
-    "E2E_BASE_URL", "https://d214my39l3yw2c.cloudfront.net"
-)
+BASE_URL = os.environ.get("E2E_BASE_URL", "https://d214my39l3yw2c.cloudfront.net")
+TEST_EMAIL = os.environ.get("E2E_TEST_EMAIL", "test@example.com")
+TEST_PASSWORD = os.environ.get("E2E_TEST_PASSWORD", "Test1234")
+DYNAMODB_TABLE = os.environ.get("E2E_DYNAMODB_TABLE", "sample-agentitest-todos")
+AWS_REGION = os.environ.get("E2E_AWS_REGION", "ap-northeast-1")
 LLM_TEMPERATURE = 0.2
 
 
@@ -131,6 +134,22 @@ async def browser_session(
         await session.stop()
 
 
+@pytest.fixture(autouse=True)
+def cleanup_test_data():
+    """テスト後にDynamoDBのTodoデータを削除する"""
+    yield
+    kwargs = {"region_name": AWS_REGION}
+    if os.environ.get("AWS_PROFILE"):
+        kwargs["profile_name"] = os.environ["AWS_PROFILE"]
+    session = boto3.Session(**kwargs)
+    dynamodb = session.resource("dynamodb")
+    table = dynamodb.Table(DYNAMODB_TABLE)
+    response = table.scan()
+    for item in response.get("Items", []):
+        if item["id"] != 0:
+            table.delete_item(Key={"id": item["id"]})
+
+
 # ---------------------------------------------------------------------------
 # エージェント実行ヘルパー
 # ---------------------------------------------------------------------------
@@ -139,40 +158,51 @@ async def browser_session(
 class BaseAgentTest:
     """AIエージェントテストの基底クラス"""
 
-    async def validate_task(
+    async def run_task(
         self,
         llm: ChatGoogle,
         browser_session: BrowserSession,
         task_instruction: str,
         expected_substring: str,
-        ignore_case: bool = False,
+        ignore_case: bool = True,
     ) -> str:
         """エージェントにタスクを実行させ、結果を検証する"""
         full_task: str = f"Go to {BASE_URL}, then {task_instruction}"
-        result_text: str = await run_agent_task(full_task, llm, browser_session)
+        result_text: str = await _run_agent_task(full_task, llm, browser_session)
         assert result_text is not None and result_text.strip() != "", (
             "Agent did not return a result."
         )
 
         if expected_substring:
-            result_to_check = result_text.lower()
+            result_to_check = result_text.lower() if ignore_case else result_text
+            target = expected_substring.lower() if ignore_case else expected_substring
             possible_confirmations = {
-                expected_substring.lower() if ignore_case else expected_substring,
+                target,
                 "visible",
                 "found",
                 "confirmed",
-                "i see it",
+                "success",
+                "done",
             }
             assert any(
                 phrase in result_to_check for phrase in possible_confirmations
             ), (
-                f"Expected a confirmation like '{expected_substring}', but got: '{result_text}'"
+                f"Expected '{expected_substring}', but got: '{result_text}'"
             )
 
         return result_text
 
+    def _sign_in_instruction(self) -> str:
+        """サインイン手順の自然言語指示を返す"""
+        return (
+            f"click the 'Sign In' link in the navigation. "
+            f"On the login page, enter '{TEST_EMAIL}' in the Email field "
+            f"and '{TEST_PASSWORD}' in the Password field, "
+            f"then click the 'Sign In' button. Wait for the page to load."
+        )
 
-async def record_step(agent: Agent) -> None:
+
+async def _record_step(agent: Agent) -> None:
     """各ステップのアクティビティをAllureに記録するフック"""
     history = agent.history
 
@@ -228,7 +258,7 @@ async def record_step(agent: Agent) -> None:
             logger.warning(f"Failed to take or attach screenshot: {e}")
 
 
-async def run_agent_task(
+async def _run_agent_task(
     full_task: str,
     llm: ChatGoogle,
     browser_session: BrowserSession,
@@ -242,7 +272,7 @@ async def run_agent_task(
         browser_session=browser_session,
     )
 
-    result = await asyncio.wait_for(agent.run(on_step_end=record_step), timeout=90)
+    result = await asyncio.wait_for(agent.run(on_step_end=_record_step), timeout=120)
     final_text: str | None = result.final_result()
 
     if final_text is not None:

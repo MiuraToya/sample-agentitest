@@ -1,3 +1,10 @@
+"""
+AgentiTest設定 — AIエージェント（browser_use + Gemini）によるE2Eテスト
+
+LLMエージェントが自然言語の指示でブラウザを操作し、
+UIの振る舞いを検証する。従来のPlaywrightテストとの比較用。
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -23,19 +30,23 @@ from playwright.sync_api import sync_playwright
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-
-# Load environment variables from .env file
 load_dotenv()
 logger = logging.getLogger(__name__)
 
+BASE_URL = os.environ.get(
+    "E2E_BASE_URL", "https://d214my39l3yw2c.cloudfront.net"
+)
 LLM_TEMPERATURE = 0.2
 
-# --- Fixtures for Setup and Configuration ---
+
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
 
 
 @pytest.fixture(scope="session")
 def browser_version_info(browser_profile: BrowserProfile) -> dict[str, str]:
-    """Fixture to get Playwright and browser version info."""
+    """Playwrightとブラウザのバージョンを取得する"""
     try:
         with sync_playwright() as p:
             playwright_version: str = version("playwright")
@@ -62,16 +73,12 @@ def allure_environment(
     request: pytest.FixtureRequest,
     browser_version_info: dict[str, str],
 ) -> None:
-    """Fixture to write environment details to a properties file for reporting.
-    This runs once per session and is automatically used.
-    By default, this creates `environment.properties` for Allure.
-    """
+    """Allureレポート用の環境情報を出力する"""
     allure_dir: str | None = request.config.getoption("--alluredir")
     if not allure_dir:
         return
 
-    ENVIRONMENT_PROPERTIES_FILENAME: str = "environment.properties"
-    properties_file: str = os.path.join(allure_dir, ENVIRONMENT_PROPERTIES_FILENAME)
+    properties_file: str = os.path.join(allure_dir, "environment.properties")
 
     try:
         os.makedirs(allure_dir, exist_ok=True)
@@ -95,9 +102,8 @@ def allure_environment(
 
 @pytest.fixture
 async def llm() -> ChatGoogle:
-    """Function-scoped fixture to initialize the language model."""
-    DEFAULT_MODEL: str = "gemini-2.5-pro"
-    model_name: str = os.getenv("GEMINI_MODEL", DEFAULT_MODEL)
+    """LLMを初期化する（Gemini）"""
+    model_name: str = os.getenv("GEMINI_MODEL", "gemini-2.5-pro")
     return ChatGoogle(
         model=model_name,
         temperature=LLM_TEMPERATURE,
@@ -107,7 +113,7 @@ async def llm() -> ChatGoogle:
 
 @pytest.fixture(scope="session")
 def browser_profile() -> BrowserProfile:
-    """Session-scoped fixture for browser profile configuration."""
+    """ブラウザプロファイルを設定する"""
     headless_mode: bool = os.getenv("HEADLESS", "True").lower() in ("true", "1", "t")
     return BrowserProfile(headless=headless_mode, keep_alive=True)
 
@@ -116,7 +122,7 @@ def browser_profile() -> BrowserProfile:
 async def browser_session(
     browser_profile: BrowserProfile,
 ) -> AsyncGenerator[BrowserSession, None]:
-    """Function-scoped fixture to manage the browser session's lifecycle."""
+    """ブラウザセッションのライフサイクルを管理する"""
     session: BrowserSession = BrowserSession(browser_profile=browser_profile)
     await session.start()
     try:
@@ -125,13 +131,13 @@ async def browser_session(
         await session.stop()
 
 
-# --- Base Test Class for Agent-based Tests ---
+# ---------------------------------------------------------------------------
+# エージェント実行ヘルパー
+# ---------------------------------------------------------------------------
 
 
 class BaseAgentTest:
-    """Base class for agent-based tests to reduce boilerplate."""
-
-    BASE_URL = "http://localhost:5173/"
+    """AIエージェントテストの基底クラス"""
 
     async def validate_task(
         self,
@@ -141,8 +147,8 @@ class BaseAgentTest:
         expected_substring: str,
         ignore_case: bool = False,
     ) -> str:
-        """Runs a task with the agent, prepends the BASE_URL, and performs common assertions."""
-        full_task: str = f"Go to {self.BASE_URL}, then {task_instruction}"
+        """エージェントにタスクを実行させ、結果を検証する"""
+        full_task: str = f"Go to {BASE_URL}, then {task_instruction}"
         result_text: str = await run_agent_task(full_task, llm, browser_session)
         assert result_text is not None and result_text.strip() != "", (
             "Agent did not return a result."
@@ -150,7 +156,6 @@ class BaseAgentTest:
 
         if expected_substring:
             result_to_check = result_text.lower()
-            # Check for the specific expected substring OR common confirmation phrases
             possible_confirmations = {
                 expected_substring.lower() if ignore_case else expected_substring,
                 "visible",
@@ -167,11 +172,8 @@ class BaseAgentTest:
         return result_text
 
 
-# --- Allure Hook for Step-by-Step Reporting ---
-
-
 async def record_step(agent: Agent) -> None:
-    """Hook function that captures and records agent activity at each step."""
+    """各ステップのアクティビティをAllureに記録するフック"""
     history = agent.history
 
     last_action: dict[str, Any] = (
@@ -205,16 +207,12 @@ async def record_step(agent: Agent) -> None:
                 attachment_type=allure.attachment_type.TEXT,
             )
 
-        # Attach Screenshot
         try:
             screenshot_b64 = await agent.browser_session.take_screenshot()
             if screenshot_b64:
-                # Validate base64 string before decoding
                 if isinstance(screenshot_b64, bytes):
-                    # If it's already bytes, use it directly
                     screenshot_bytes: bytes | None = screenshot_b64
-                elif is_valid_base64(screenshot_b64):
-                    # If it's a valid base64 string, decode it
+                elif _is_valid_base64(screenshot_b64):
                     screenshot_bytes = base64.b64decode(screenshot_b64)
                 else:
                     logger.warning("Invalid base64 padding in screenshot data")
@@ -230,15 +228,12 @@ async def record_step(agent: Agent) -> None:
             logger.warning(f"Failed to take or attach screenshot: {e}")
 
 
-# --- Helper Function to Run Agent ---
-
-
 async def run_agent_task(
     full_task: str,
     llm: ChatGoogle,
     browser_session: BrowserSession,
 ) -> str:
-    """Initializes and runs the browser agent for a given task using an active browser session."""
+    """エージェントを初期化してタスクを実行する"""
     logger.info(f"Running task: {full_task}")
 
     agent: Agent = Agent(
@@ -247,11 +242,9 @@ async def run_agent_task(
         browser_session=browser_session,
     )
 
-    # Add timeout to prevent hanging
     result = await asyncio.wait_for(agent.run(on_step_end=record_step), timeout=90)
     final_text: str | None = result.final_result()
 
-    # Only attach final result if it's not None
     if final_text is not None:
         allure.attach(
             final_text,
@@ -262,25 +255,17 @@ async def run_agent_task(
     return final_text if final_text else ""
 
 
-# --- Utility Function for Base64 Validation ---
-
-
-def is_valid_base64(s: Any) -> bool:
-    """Check if a string or bytes is a valid base64 encoded data."""
+def _is_valid_base64(s: Any) -> bool:
+    """Base64エンコードされたデータかどうかを検証する"""
     try:
-        # If it's already bytes, try to decode it directly
         if isinstance(s, bytes):
             base64.b64decode(s, validate=True)
             return True
-
-        # If it's a string, check if length is multiple of 4 and try to decode
         if isinstance(s, str):
-            # Check if length is multiple of 4
             if len(s) % 4 != 0:
                 return False
             base64.b64decode(s, validate=True)
             return True
-
         return False
     except binascii.Error:
         return False

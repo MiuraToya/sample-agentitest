@@ -1,18 +1,28 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../auth/AuthContext";
 
 type Todo = {
   id: number;
   title: string;
 };
 
-const API_URL = "http://localhost:8000/api/todos";
+const API_URL = `${import.meta.env.VITE_API_URL ?? ""}/api/todos`;
 
 function TodoPage() {
+  const { auth } = useAuth();
   const [todos, setTodos] = useState<Todo[]>([]);
   const [title, setTitle] = useState("");
 
+  const headers = (): Record<string, string> => {
+    const h: Record<string, string> = { "Content-Type": "application/json" };
+    if (auth.status === "authenticated") {
+      h["Authorization"] = `Bearer ${auth.idToken}`;
+    }
+    return h;
+  };
+
   const fetchTodos = async () => {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL, { headers: headers() });
     setTodos(await res.json());
   };
 
@@ -25,7 +35,7 @@ function TodoPage() {
     if (!title.trim()) return;
     await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: headers(),
       body: JSON.stringify({ title }),
     });
     setTitle("");
@@ -33,7 +43,7 @@ function TodoPage() {
   };
 
   const deleteTodo = async (id: number) => {
-    await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+    await fetch(`${API_URL}/${id}`, { method: "DELETE", headers: headers() });
     fetchTodos();
   };
 

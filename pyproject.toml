@@ -1,0 +1,18 @@
+[project]
+name = "sample-agentitest"
+version = "0.1.0"
+description = "Sample app for AgentiTest"
+requires-python = ">=3.11"
+dependencies = [
+    "allure-pytest==2.15.0",
+    "browser-use[all]==0.8.0",
+    "playwright>=1.55.0",
+    "pytest==8.4.2",
+    "pytest-asyncio==1.2.0",
+    "python-dotenv==1.1.1",
+    "tenacity==8.5.0",
+    "fastapi",
+    "uvicorn",
+    "pytest-playwright>=0.6.2",
+    "boto3>=1.35.0",
+]

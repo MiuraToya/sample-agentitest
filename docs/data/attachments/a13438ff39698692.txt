@@ -1,0 +1,1 @@
+The todo item '一時的なタスク' was successfully added and then deleted. The 'No todos yet' message is now displayed, confirming the deletion. todo_deleted

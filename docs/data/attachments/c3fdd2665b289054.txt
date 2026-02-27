@@ -1,0 +1,1 @@
+Successfully navigated to the 'about' page. The URL now contains '/about'.

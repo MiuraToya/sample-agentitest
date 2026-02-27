@@ -1,0 +1,1 @@
+The 'Sign In' link is visible on the navigation bar. There is no 'Sign Out' button present. The condition 'sign_in_visible' is met.

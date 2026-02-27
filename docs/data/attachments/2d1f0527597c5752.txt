@@ -1,1 +1,0 @@
-The temporary task '一時的なタスク' has been successfully deleted, and the 'No todos yet.' message is displayed, confirming the completion of the request.

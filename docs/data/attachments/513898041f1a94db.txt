@@ -1,0 +1,1 @@
+Successfully added 'タスクA', 'タスクB', and 'タスクC', then deleted 'タスクB'. Confirmed that 'タスクA' and 'タスクC' remain in the list. partial_delete_ok

@@ -496,7 +496,7 @@
 <!-- ============================================================ -->
 <section id="benchmark">
   <h2>3. テストケースごとのベンチマーク</h2>
-  <p>同一の 11 シナリオを E2E と AgentiTest の両方で実装し、GitHub Actions CI 上で実行した結果 (2026-02-27)。AgentiTest のモデルは gemini-2.5-flash-lite。</p>
+  <p>同一の 11 シナリオを E2E と AgentiTest の両方で実装し、GitHub Actions CI 上で実行した結果 (2026-02-27)。browser-use の LLM は gemini-2.5-flash-lite。</p>
 
   <div class="stats">
     <div class="stat-card">
@@ -775,7 +775,7 @@
       <h4>コストパフォーマンス</h4>
       <ul>
         <li>シンプルな E2E テストであれば、Playwright で十分に安定・高速に実行できる</li>
-        <li>AgentiTest は 1 テストケースあたり LLM API を 1〜9 回呼び出す（今回の合計: 46 回）</li>
+        <li>browser-use は 1 テストケースあたり LLM API を 1〜9 回呼び出す（今回の合計: 46 回）</li>
         <li>実行時間は E2E の <strong>3.7 倍</strong>かかる</li>
         <li>API コストがゼロの Playwright と比べると、明確なシナリオが決まっている場合のコスパは微妙</li>
       </ul>

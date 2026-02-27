@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentiTest 調査レポート</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #334155;
+      --border: #475569;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent2: #818cf8;
+      --green: #4ade80;
+      --red: #f87171;
+      --orange: #fb923c;
+      --yellow: #fbbf24;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ---- Hero ---- */
+    .hero {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 4rem 2rem 3rem;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .hero .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+    .hero .meta {
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .hero .meta span {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* ---- Layout ---- */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    section {
+      margin: 3rem 0;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+
+    h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--accent);
+    }
+
+    p, li {
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    ul { padding-left: 1.5rem; }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover { text-decoration: underline; }
+
+    /* ---- Cards ---- */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+    }
+
+    .card h4 {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      color: var(--text);
+    }
+
+    .card .label {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+    }
+    .label-e2e  { background: rgba(74,222,128,0.15); color: var(--green); }
+    .label-agent { background: rgba(56,189,248,0.15); color: var(--accent); }
+
+    /* ---- Tables ---- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    thead th {
+      background: var(--surface2);
+      color: var(--text);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+    tbody td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    tbody tr:hover { background: var(--surface); }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .pass { color: var(--green); font-weight: 600; }
+    .fail { color: var(--red); font-weight: 600; }
+
+    /* ---- Chart ---- */
+    .chart-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+    }
+
+    .bar-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 240px 1fr 60px;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.82rem;
+    }
+    .bar-row .name {
+      color: var(--text-muted);
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .bar-track {
+      height: 22px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+    }
+    .bar-fill-e2e {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #4ade80);
+      border-radius: 4px 0 0 4px;
+      transition: width 0.6s ease;
+    }
+    .bar-fill-agent {
+      height: 100%;
+      background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+      border-radius: 0 4px 4px 0;
+      transition: width 0.6s ease;
+    }
+    .bar-row .time { font-variant-numeric: tabular-nums; color: var(--text-muted); font-size: 0.8rem; }
+
+    /* ---- Flow diagram ---- */
+    .flow {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      color: var(--text-muted);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .flow .highlight { color: var(--accent); font-weight: 600; }
+    .flow .green { color: var(--green); }
+    .flow .orange { color: var(--orange); }
+    .flow .muted { color: var(--border); }
+
+    /* ---- Stats row ---- */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .stat-card .desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+    .value-green { color: var(--green); }
+    .value-blue  { color: var(--accent); }
+    .value-orange { color: var(--orange); }
+    .value-red { color: var(--red); }
+
+    /* ---- Comparison ---- */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin: 1rem 0;
+    }
+    @media (max-width: 700px) {
+      .compare-grid { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 120px 1fr 50px; }
+      .bar-row .name { font-size: 0.72rem; }
+    }
+
+    .code-block {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      overflow-x: auto;
+      color: var(--text-muted);
+    }
+    .code-block .kw { color: #ff7b72; }
+    .code-block .str { color: #a5d6ff; }
+    .code-block .fn { color: #d2a8ff; }
+    .code-block .cm { color: #8b949e; }
+
+    /* ---- Reliability ---- */
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+      margin: 1rem 0;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.5rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 1.25rem;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -1.65rem;
+      top: 0.5rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--bg);
+    }
+    .timeline-item.success::before { border-color: var(--green); background: var(--green); }
+    .timeline-item.failure::before { border-color: var(--red); background: var(--red); }
+    .timeline-item .run-title { font-weight: 600; color: var(--text); font-size: 0.9rem; }
+    .timeline-item .run-detail { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* ---- Discussion placeholder ---- */
+    .discussion-placeholder {
+      background: linear-gradient(135deg, var(--surface) 0%, #1e1b4b 100%);
+      border: 2px dashed var(--accent2);
+      border-radius: 10px;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    .discussion-placeholder p {
+      color: var(--accent2);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* ---- Footer ---- */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- Hero                                                         -->
+<!-- ============================================================ -->
+<header class="hero">
+  <h1>AgentiTest 調査レポート</h1>
+  <p class="subtitle">AIエージェント (browser-use + Gemini) による E2E テストの実践評価</p>
+  <div class="meta">
+    <span>対象: sample-agentitest</span>
+    <span>調査日: 2026-02-27</span>
+    <span>CI: GitHub Actions</span>
+    <span>LLM: gemini-2.5-flash-lite</span>
+  </div>
+  <div style="margin-top:0.75rem; font-family:monospace; letter-spacing:0.05em; font-size:0.85rem;">
+    <a href="https://d214my39l3yw2c.cloudfront.net" target="_blank" style="color:var(--text-muted); text-decoration:none;">Web App</a>
+    <span style="color:var(--text-muted); opacity:0.4; margin:0 0.6em;">|</span>
+    <a href="https://miuratoya.github.io/sample-agentitest/" target="_blank" style="color:var(--text-muted); text-decoration:none;">Allure Report</a>
+    <span style="color:var(--text-muted); opacity:0.4; margin:0 0.6em;">|</span>
+    <a href="https://github.com/MiuraToya/sample-agentitest" target="_blank" style="color:var(--text-muted); text-decoration:none;">GitHub</a>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- 1. プロジェクト概要                                             -->
+<!-- ============================================================ -->
+<section id="overview">
+  <h2>1. プロジェクト概要</h2>
+  <p>
+    本プロジェクトは、React + FastAPI で構成された Todo アプリケーションに対し、
+    <strong>従来の Playwright E2E テスト</strong>と <strong>AI エージェントテスト (AgentiTest)</strong> の
+    2つのアプローチで同一の 11 テストケースを実装し、信頼性・速度・保守性を比較するものである。
+  </p>
+
+  <h3>技術スタック</h3>
+  <div class="card-grid">
+    <div class="card">
+      <h4>フロントエンド</h4>
+      <ul>
+        <li>React 19 + TypeScript + Vite</li>
+        <li>React Router v7</li>
+        <li>Amazon Cognito 認証</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>バックエンド</h4>
+      <ul>
+        <li>FastAPI + Python 3.12</li>
+        <li>AWS Lambda (Mangum)</li>
+        <li>DynamoDB</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>インフラ</h4>
+      <ul>
+        <li>S3 + CloudFront (CDN)</li>
+        <li>API Gateway</li>
+        <li>Terraform IaC</li>
+        <li>GitHub Actions CI/CD</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>テスト</h4>
+      <ul>
+        <li>Playwright (E2E)</li>
+        <li>browser-use 0.8.0 + Gemini (AgentiTest)</li>
+        <li>pytest + Allure Reports</li>
+        <li>pytest-asyncio</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 2. アーキテクチャ                                               -->
+<!-- ============================================================ -->
+<section id="architecture">
+  <h2>2. アーキテクチャ</h2>
+
+  <h3>E2E テスト (Playwright) の構造</h3>
+  <p>テストコードがセレクタを直接指定してブラウザを操作する。人間が手順書をそのままコードにしたイメージ。</p>
+  <div class="flow"><span class="green">pytest</span> &rarr; <span class="highlight">Playwright</span> &rarr; Chromium
+  <span class="muted">│</span>
+  <span class="muted">│</span>  テストコードが直接操作:
+  <span class="muted">│</span>    page.goto("/todo")
+  <span class="muted">│</span>    page.fill("input", "買い物に行く")
+  <span class="muted">│</span>    page.click("button:text('Add')")
+  <span class="muted">│</span>    expect(page.locator(".todo-item")).to_contain_text("買い物に行く")
+  <span class="muted">│</span>
+  <span class="muted">└──</span> <span class="orange">結果: 即座に判定</span></div>
+
+  <h3>AgentiTest (browser-use + Gemini) の構造</h3>
+  <p>テストコードは自然言語の指示だけ書く。browser-use の Agent が LLM と対話しながらブラウザを操作する。</p>
+  <div class="flow"><span class="green">pytest</span> &rarr; <span class="highlight">browser-use Agent</span> &rarr; Chromium
+  <span class="muted">│</span>
+  <span class="muted">│</span>  テストコードが渡すのは自然言語だけ:
+  <span class="muted">│</span>    <span class="str">"Todoページで '買い物に行く' を入力して Add をクリック。</span>
+  <span class="muted">│</span>     <span class="str">リストに表示されたら 'todo_added' と返して"</span>
+  <span class="muted">│</span>
+  <span class="muted">│</span>  Agent の内部ループ (1 step = Gemini との 1 ラリー):
+  <span class="muted">│</span>  <span class="muted">┌────────────────────────────────────────────────┐</span>
+  <span class="muted">│</span>  <span class="muted">│</span> <span class="orange">① スクショ + DOM を取得</span>                        <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span>          &darr;                                      <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span> <span class="highlight">② Gemini に送信</span>: 今の画面はこう。次は何する？   <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span>          &darr;                                      <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span> <span class="highlight">③ Gemini が判断</span>: input に '買い物に行く' を入力  <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span>          &darr;                                      <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span> <span class="green">④ Playwright で操作実行</span>                        <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span>          &darr;                                      <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span> <span class="orange">⑤ on_step_end で Allure に記録</span>                 <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span>          &darr;                                      <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">│</span> 完了するまで ① に戻る (タイムアウト: 120秒)        <span class="muted">│</span>
+  <span class="muted">│</span>  <span class="muted">└────────────────────────────────────────────────┘</span>
+  <span class="muted">│</span>
+  <span class="muted">└──</span> <span class="orange">結果: LLM の最終回答テキストを assert で検証</span></div>
+
+  <h3>テストコードの対比</h3>
+  <div class="compare-grid">
+    <div class="card">
+      <span class="label label-e2e">E2E (Playwright)</span>
+      <div class="code-block"><span class="kw">def</span> <span class="fn">test_Todoを追加するとリストに表示される</span>(signed_in, todo):
+    todo.add_todo(<span class="str">"買い物に行く"</span>)
+    <span class="kw">assert</span> <span class="str">"買い物に行く"</span> <span class="kw">in</span> todo.todo_titles</div>
+    </div>
+    <div class="card">
+      <span class="label label-agent">AgentiTest (browser-use)</span>
+      <div class="code-block"><span class="kw">async def</span> <span class="fn">test_Todoを追加するとリストに表示される</span>(self, llm, browser_session):
+    <span class="kw">await</span> self.run_task(
+        llm, browser_session,
+        <span class="str">f"{self._sign_in_instruction()} "</span>
+        <span class="str">"On the Todo page, type '買い物に行く' "</span>
+        <span class="str">"in the input field and click 'Add'. "</span>
+        <span class="str">"Confirm that '買い物に行く' appears. "</span>
+        <span class="str">"Return 'todo_added' if it does."</span>,
+        <span class="str">"todo_added"</span>,
+    )</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 3. テストケースごとのベンチマーク                                   -->
+<!-- ============================================================ -->
+<section id="benchmark">
+  <h2>3. テストケースごとのベンチマーク</h2>
+  <p>同一の 11 シナリオを E2E と AgentiTest の両方で実装し、GitHub Actions CI 上で実行した結果 (2026-02-27)。AgentiTest のモデルは gemini-2.5-flash-lite。</p>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="value value-green">11/11</div>
+      <div class="desc">E2E テスト成功</div>
+    </div>
+    <div class="stat-card">
+      <div class="value value-blue">11/11</div>
+      <div class="desc">AgentiTest 成功</div>
+    </div>
+    <div class="stat-card">
+      <div class="value value-green">41.1s</div>
+      <div class="desc">E2E 合計時間</div>
+    </div>
+    <div class="stat-card">
+      <div class="value value-blue">153.6s</div>
+      <div class="desc">AgentiTest 合計時間</div>
+    </div>
+    <div class="stat-card">
+      <div class="value value-orange">3.7x</div>
+      <div class="desc">速度差</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>テストケース</th>
+        <th class="num">E2E</th>
+        <th class="num">Agent</th>
+        <th class="num">Steps</th>
+        <th class="num">倍率</th>
+        <th>E2E</th>
+        <th>Agent</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>トップページにタイトルと説明文が表示される</td><td class="num">1.8s</td><td class="num">10.8s</td><td class="num">1</td><td class="num">6.0x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>2</td><td>AboutカードからAboutページへ遷移できる</td><td class="num">1.4s</td><td class="num">7.2s</td><td class="num">2</td><td class="num">5.1x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>3</td><td>未認証でTodoページにアクセスするとログインに飛ぶ</td><td class="num">1.7s</td><td class="num">6.0s</td><td class="num">2</td><td class="num">3.5x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>4</td><td>正しい認証情報でサインインするとTodoページが表示される</td><td class="num">3.4s</td><td class="num">14.1s</td><td class="num">4</td><td class="num">4.1x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>5</td><td>サインアウト後にTodoページへアクセスするとログインに戻る</td><td class="num">5.8s</td><td class="num">18.2s</td><td class="num">6</td><td class="num">3.1x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>6</td><td>ナビでHomeとAboutを行き来できる</td><td class="num">2.1s</td><td class="num">15.1s</td><td class="num">6</td><td class="num">7.2x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>7</td><td>未認証時ナビにサインインリンクが表示される</td><td class="num">1.7s</td><td class="num">3.2s</td><td class="num">1</td><td class="num">1.9x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>8</td><td>認証後ナビにサインアウトボタンが表示される</td><td class="num">4.0s</td><td class="num">13.2s</td><td class="num">4</td><td class="num">3.3x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>9</td><td>Todoを追加するとリストに表示される</td><td class="num">4.3s</td><td class="num">17.1s</td><td class="num">5</td><td class="num">4.0x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>10</td><td>Todoを追加して削除すると空メッセージが表示される</td><td class="num">6.2s</td><td class="num">18.6s</td><td class="num">6</td><td class="num">3.0x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr><td>11</td><td>複数Todoから1件削除すると残りが正しく表示される</td><td class="num">8.7s</td><td class="num">30.1s</td><td class="num">9</td><td class="num">3.5x</td><td class="pass">PASS</td><td class="pass">PASS</td></tr>
+      <tr style="font-weight:700; border-top: 2px solid var(--border);">
+        <td></td>
+        <td>合計 (平均)</td>
+        <td class="num">41.1s (3.7s)</td>
+        <td class="num">153.6s (14.0s)</td>
+        <td class="num">46</td>
+        <td class="num">3.7x</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>ビジュアル比較</h3>
+  <div class="chart-container">
+    <div style="display:flex; gap:1.5rem; margin-bottom:1rem; font-size:0.8rem;">
+      <span><span style="display:inline-block;width:12px;height:12px;background:#4ade80;border-radius:2px;vertical-align:middle;"></span> E2E (Playwright)</span>
+      <span><span style="display:inline-block;width:12px;height:12px;background:#38bdf8;border-radius:2px;vertical-align:middle;"></span> AgentiTest (browser-use)</span>
+    </div>
+    <div class="bar-chart">
+      <div class="bar-row">
+        <span class="name">トップページ タイトル表示</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:5.8%"></div>
+          <div class="bar-fill-agent" style="width:35.2%"></div>
+        </div>
+        <span class="time">1.8 / 10.8s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">About カード遷移</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:4.5%"></div>
+          <div class="bar-fill-agent" style="width:23.5%"></div>
+        </div>
+        <span class="time">1.4 / 7.2s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">未認証リダイレクト</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:5.5%"></div>
+          <div class="bar-fill-agent" style="width:19.6%"></div>
+        </div>
+        <span class="time">1.7 / 6.0s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">サインイン</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:11.1%"></div>
+          <div class="bar-fill-agent" style="width:46.0%"></div>
+        </div>
+        <span class="time">3.4 / 14.1s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">サインアウト後アクセス</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:18.9%"></div>
+          <div class="bar-fill-agent" style="width:59.3%"></div>
+        </div>
+        <span class="time">5.8 / 18.2s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">ナビ Home↔About</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:6.8%"></div>
+          <div class="bar-fill-agent" style="width:49.2%"></div>
+        </div>
+        <span class="time">2.1 / 15.1s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">Sign In リンク表示</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:5.5%"></div>
+          <div class="bar-fill-agent" style="width:10.4%"></div>
+        </div>
+        <span class="time">1.7 / 3.2s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">Sign Out ボタン表示</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:13.0%"></div>
+          <div class="bar-fill-agent" style="width:43.0%"></div>
+        </div>
+        <span class="time">4.0 / 13.2s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">Todo 追加</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:14.0%"></div>
+          <div class="bar-fill-agent" style="width:55.7%"></div>
+        </div>
+        <span class="time">4.3 / 17.1s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">Todo 追加&amp;削除</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:20.2%"></div>
+          <div class="bar-fill-agent" style="width:60.7%"></div>
+        </div>
+        <span class="time">6.2 / 18.6s</span>
+      </div>
+      <div class="bar-row">
+        <span class="name">複数 Todo 管理</span>
+        <div class="bar-track">
+          <div class="bar-fill-e2e" style="width:28.4%"></div>
+          <div class="bar-fill-agent" style="width:98.1%"></div>
+        </div>
+        <span class="time">8.7 / 30.1s</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 4. 信頼性                                                     -->
+<!-- ============================================================ -->
+<section id="reliability">
+  <h2>4. 信頼性</h2>
+  <p>AI Agent がどのような思考フローで操作し、最終的にどう判断したかを CI の実行ログから確認した。</p>
+
+  <h3>実例 1: シンプルなケース (1 step で完了)</h3>
+  <p>「未認証時ナビにサインインリンクが表示される」 &mdash; ページを見ただけで即座に判定。</p>
+  <div class="card">
+    <div class="flow"><span class="highlight">Step 1:</span>
+  <span class="green">Eval:</span> Successfully navigated to the target URL. <span class="pass">Verdict: Success</span>
+  <span class="orange">Next goal:</span> Return 'sign_in_visible' as the 'Sign In' link is visible
+              and no 'Sign Out' button is present.
+  <span class="highlight">ACTION:</span> done &rarr; text: sign_in_visible, success: True
+  <span class="green">Task completed successfully</span> (3.2s / 1 step)</div>
+  </div>
+
+  <h3>実例 2: 複数ステップの操作 (5 steps)</h3>
+  <p>「Todoを追加するとリストに表示される」 &mdash; サインイン → Todo入力 → 確認の流れ。</p>
+  <div class="card">
+    <div class="flow"><span class="highlight">Step 1:</span> <span class="green">Eval:</span> Successfully navigated to the initial URL. <span class="pass">Success</span>
+         <span class="orange">Next goal:</span> Click on the 'Sign In' link to navigate to the login page.
+         <span class="highlight">ACTION:</span> click index: 5
+
+<span class="highlight">Step 2:</span> <span class="green">Eval:</span> Successfully clicked the 'Sign In' link. <span class="pass">Success</span>
+         <span class="orange">Next goal:</span> Enter email into field (index 6), password into field (index 7),
+                    then click 'Sign In' button (index 8).
+         <span class="highlight">ACTION:</span> input index: 6, text: test@example.com
+         <span class="highlight">ACTION:</span> input index: 7, text: ***
+         <span class="highlight">ACTION:</span> click index: 8
+
+<span class="highlight">Step 3:</span> <span class="green">Eval:</span> Successfully entered email and password and clicked sign-in. <span class="pass">Success</span>
+         <span class="orange">Next goal:</span> Wait for page to load, then check for 'Todo List' heading.
+         <span class="highlight">ACTION:</span> wait 2s
+
+<span class="highlight">Step 4:</span> <span class="green">Eval:</span> Successfully logged in and waited for page to load. <span class="pass">Success</span>
+         <span class="orange">Next goal:</span> Type '買い物に行く' into input field and click 'Add'.
+         <span class="highlight">ACTION:</span> input index: 6, text: 買い物に行く
+         <span class="highlight">ACTION:</span> click index: 7
+
+<span class="highlight">Step 5:</span> <span class="green">Eval:</span> Successfully added '買い物に行く' to the todo list. <span class="pass">Success</span>
+         <span class="orange">Next goal:</span> Confirm it appears, then call done.
+         <span class="highlight">ACTION:</span> done &rarr; text: todo_added, success: True
+         <span class="green">Task completed successfully</span> (17.1s / 5 steps)</div>
+  </div>
+
+  <h3>実例 3: 自己リカバリが発生したケース</h3>
+  <p>「認証後ナビにサインアウトボタンが表示される」 &mdash; Step 3 でログインがまだ反映されていないと判断し、リトライ後に成功。</p>
+  <div class="card">
+    <div class="flow"><span class="highlight">Step 1:</span> click 'Sign In' link &rarr; <span class="pass">Success</span>
+<span class="highlight">Step 2:</span> input email + password, click 'Sign In' &rarr; <span class="pass">Success</span>
+
+<span class="highlight">Step 3:</span> <span class="fail">Eval: The login was not successful as the login form is still visible.</span>
+         <span class="fail">Verdict: Failure</span>
+         <span class="orange">Next goal:</span> Click the 'Sign In' button (index 8) again to attempt logging in.
+         <span class="highlight">ACTION:</span> click index: 8
+
+<span class="highlight">Step 4:</span> <span class="fail">Eval: The previous login attempt failed, as the login form was still visible.</span>
+         <span class="fail">Verdict: Failure</span>
+         <span class="orange">BUT:</span> The 'Sign Out' button is visible and the 'Sign In' link is not,
+               fulfilling the user's request.
+         <span class="highlight">ACTION:</span> done &rarr; text: sign_out_visible, success: True
+         <span class="green">Task completed successfully</span> (13.2s / 4 steps)</div>
+  </div>
+  <p style="margin-top:0.75rem;">
+    Eval では「ログイン失敗」と判定しつつも、最終的にはゴール（Sign Out ボタンの表示）が達成されていることを認識して正しく完了している。
+    画面の状態遷移のタイミングと LLM の判断にラグがあるが、結果的にはリカバリできている。
+  </p>
+
+  <h3>実例 4: 最も複雑なケース (9 steps)</h3>
+  <p>「複数Todoから1件削除すると残りが正しく表示される」 &mdash; 3件追加 → 1件削除 → 残り確認。途中で操作の中断からリカバリ。</p>
+  <div class="card">
+    <div class="flow"><span class="highlight">Step 1-3:</span> navigate &rarr; sign in &rarr; <span class="pass">Success</span>
+<span class="highlight">Step 4:</span>   navigate to /todo, input 'タスクA', click 'Add' &rarr; <span class="pass">Success</span>
+<span class="highlight">Step 5:</span>   <span class="green">Eval:</span> Successfully added 'タスクA'. <span class="pass">Success</span>
+           input 'タスクB', click 'Add'
+
+<span class="highlight">Step 6:</span>   <span class="orange">Eval: Partially successful. Input 'タスクB' was successful,</span>
+           <span class="orange">but the click on 'Add' was interrupted.</span>
+           <span class="orange">Next goal:</span> Click the 'Add' button again.
+           <span class="highlight">ACTION:</span> click index: 7  <span class="cm">&larr; 自己リカバリ</span>
+
+<span class="highlight">Step 7:</span>   <span class="green">Eval:</span> Successfully clicked 'Add' to add 'タスクB'. <span class="pass">Success</span>
+           input 'タスクC', click 'Add' &rarr; <span class="pass">Success</span>
+
+<span class="highlight">Step 8:</span>   <span class="green">Eval:</span> Successfully added 'タスクC'. <span class="pass">Success</span>
+           <span class="orange">Next goal:</span> Click the 'Delete' button (index 9) associated with 'タスクB'.
+           <span class="highlight">ACTION:</span> click index: 9
+
+<span class="highlight">Step 9:</span>   <span class="green">Eval:</span> Successfully deleted 'タスクB'. <span class="pass">Success</span>
+           <span class="highlight">ACTION:</span> done &rarr; text: "Successfully added タスクA, タスクB, and タスクC,
+           then deleted タスクB. Confirmed that タスクA and タスクC remain in the list.
+           partial_delete_ok"
+           <span class="green">Task completed successfully</span> (30.1s / 9 steps)</div>
+  </div>
+
+  <h3>判定精度の所感</h3>
+  <p>
+    今回の 11 ケースはいずれも単純なシナリオテスト（画面遷移、フォーム入力、要素の表示確認）であり、
+    Agent は全ケースで正確に操作・判定を完了した。
+    操作中にタイミングのずれや中断が発生しても、次のステップで画面の状態を再評価し自律的にリカバリしている点は注目に値する。
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- 5. 限界                                                       -->
+<!-- ============================================================ -->
+<section id="limitations">
+  <h2>5. 限界</h2>
+  <p>本調査では限界を意図的に突くようなテストは行っていないが、シンプルな E2E テストの範囲で感じた課題を整理する。</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h4>コストパフォーマンス</h4>
+      <ul>
+        <li>シンプルな E2E テストであれば、Playwright で十分に安定・高速に実行できる</li>
+        <li>AgentiTest は 1 テストケースあたり LLM API を 1〜9 回呼び出す（今回の合計: 46 回）</li>
+        <li>実行時間は E2E の <strong>3.7 倍</strong>かかる</li>
+        <li>API コストがゼロの Playwright と比べると、明確なシナリオが決まっている場合のコスパは微妙</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>複雑なケースへの懸念</h4>
+      <ul>
+        <li>今回は単純な CRUD + 認証のテストで全て成功したが、より複雑なシナリオでは結果がブレる可能性がある</li>
+        <li>実例: 「ナビ Home↔About」で Agent が Home リンクを誤認して 6 step（E2E なら 2 step 相当の操作）かかった</li>
+        <li>実例: ログイン後の画面反映タイミングで Failure 判定が出たが、たまたまリカバリできた</li>
+        <li>LLM の判断は非決定的であり、同じテストを複数回実行した場合に step 数や経路が毎回変わりうる</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>運用上の注意</h4>
+      <ul>
+        <li>LLM API のレートリミットに引っかかると全テストが一斉に失敗する（CI 実績あり）</li>
+        <li>失敗時のエラーが一律 "Agent did not return a result" となり、原因の切り分けが困難</li>
+        <li>CI のタイムアウト設定を E2E (15分) より大きく (30分) 取る必要がある</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- 6. 今後の展望                                                   -->
+<!-- ============================================================ -->
+<section id="future">
+  <h2>6. 今後の展望</h2>
+
+  <div class="card">
+    <h4>テストコードは「ガードレール」である</h4>
+    <p>
+      現在の AI の精度において、テストコードはプロダクトの品質を担保するガードレールとしての役割を大きく担っている。
+      そのガードレール自体を AI に委ねるのは、品質保証の観点からリスクがある。
+      LLM の判断は確率的であり、テストの合否判定が非決定的になることは、CI/CD パイプラインの信頼性を損なう可能性がある。
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <h4>「テストを書く」のではなく「テストを補助する」方向</h4>
+    <p>
+      一方で、AI Agent に十分なコンテキスト（アプリの目的、ユーザーストーリー、既知のバグパターン）を与えた上で
+      <strong>探索的テスト</strong>を行わせる使い方は有望と考える。
+    </p>
+    <ul>
+      <li>既存の E2E テストではカバーしきれないエッジケースを探索的に発見する</li>
+      <li>QA エンジニアがコードを書けなくても、自然言語でシナリオを記述して AI に実行させるワークフロー</li>
+      <li>テストケースの「作成」を AI が行い、「実行・判定」は従来のフレームワークが行う、という役割分担</li>
+    </ul>
+    <p>
+      つまり、AI Agent は<strong>確定的なリグレッションテストの代替</strong>ではなく、
+      <strong>人間の探索的テストの拡張</strong>として位置づけるのが現実的ではないか。
+    </p>
+  </div>
+</section>
+
+</div><!-- /.container -->
+
+<footer>
+  <p>AgentiTest 調査レポート | sample-agentitest | 2026-02-27</p>
+  <p>
+    <a href="https://d214my39l3yw2c.cloudfront.net" target="_blank">Web App</a>
+    &nbsp;|&nbsp;
+    <a href="https://miuratoya.github.io/sample-agentitest/" target="_blank">Allure Report (GitHub Pages)</a>
+    &nbsp;|&nbsp;
+    <a href="https://github.com/MiuraToya/sample-agentitest" target="_blank">GitHub Repository</a>
+  </p>
+</footer>
+
+</body>
+</html>

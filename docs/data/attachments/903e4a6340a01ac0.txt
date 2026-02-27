@@ -1,0 +1,1 @@
+The 'About' navigation failed to update the URL to '/about' as requested. The 'Home' navigation was successful, and the 'Welcome to SampleApp' heading is visible. Since both navigations were not successful, the task is not fully completed.

@@ -1,0 +1,1 @@
+Successfully redirected to the login page with a 'Sign In' heading after clicking the 'Todo' link. The value 'signed_out_redirected' is confirmed.

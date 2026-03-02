@@ -1,6 +1,6 @@
 # sample-agentitest
 
-React + FastAPI の Todo アプリケーション。AWS にデプロイし、Playwright E2E テストと AgentiTest（AI エージェントテスト）を比較するためのサンプルプロジェクト。
+React + FastAPI の Todo アプリケーション。AWS にデプロイし、Playwright E2E テストと AI Agent が行うE2Eテストを比較するためのサンプルプロジェクト
 
 ## 技術スタック
 
